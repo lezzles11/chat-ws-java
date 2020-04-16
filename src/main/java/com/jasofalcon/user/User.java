@@ -46,4 +46,10 @@ public class User implements Serializable {
 
         return Objects.equals(this.id, other.id) && Objects.equals(this.name, other.name);
     }
+    public User getBot() {
+        User newBot = new User();
+        newBot.setName("Bot");
+        newBot.setId("Bot");
+        return newBot; 
+    }
 }

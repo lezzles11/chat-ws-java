@@ -59,7 +59,7 @@ public class ChatServer extends WebSocketServer {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Message msg = mapper.readValue(message, Message.class);
-
+            // when the messsage is received, get the type of message. 
             switch (msg.getType()) {
                 case USER_JOINED:
                     addUser(new User(msg.getUser().getName()), conn);
@@ -93,6 +93,19 @@ public class ChatServer extends WebSocketServer {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String messageJson = mapper.writeValueAsString(msg);
+            System.out.println("BROADCAST MESSAGE METHOD");
+            System.out.println(messageJson);
+            for (WebSocket sock : conns) {
+                sock.send(messageJson);
+            }
+        } catch (JsonProcessingException e) {
+            logger.error("Cannot convert message to json.");
+        }
+    }
+    private void botMessage(Message msg) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String messageJson = mapper.writeValueAsString("i'm a bot!");
             for (WebSocket sock : conns) {
                 sock.send(messageJson);
             }
@@ -102,6 +115,15 @@ public class ChatServer extends WebSocketServer {
     }
 
     private void addUser(User user, WebSocket conn) throws JsonProcessingException {
+        // BEGINNING CHANGES
+        User newBot = new User();
+        newBot.setName("Bot");
+        newBot.setId("Bot");
+        users.put(conn, newBot);
+        acknowledgeUserJoined(newBot, conn);
+        broadcastUserActivityMessage(MessageType.USER_JOINED);
+        // END 
+        
         users.put(conn, user);
         acknowledgeUserJoined(user, conn);
         broadcastUserActivityMessage(MessageType.USER_JOINED);
@@ -122,13 +144,22 @@ public class ChatServer extends WebSocketServer {
     private void broadcastUserActivityMessage(MessageType messageType) throws JsonProcessingException {
 
         Message newMessage = new Message();
-
         ObjectMapper mapper = new ObjectMapper();
         String data = mapper.writeValueAsString(users.values());
         newMessage.setData(data);
         newMessage.setType(messageType);
+        // beginning changes
+        Message botMessage = new Message();
+        ObjectMapper botMapper = new ObjectMapper();
+        String robotData = botMapper.writeValueAsString("hi");
+        botMessage.setData(robotData);
+        botMessage.setType(messageType);
+        botMessage(botMessage);
+        // ending changes
         broadcastMessage(newMessage);
     }
+    
+    
 
     public static void main(String[] args) {
         int port;
@@ -137,7 +168,7 @@ public class ChatServer extends WebSocketServer {
         } catch (NumberFormatException nfe) {
             port = 9000;
         }
-        new ChatServer(port).start();
+        new ChatServer(3000).start();
     }
 
 }

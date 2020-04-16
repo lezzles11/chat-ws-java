@@ -2,6 +2,7 @@ package com.jasofalcon.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.jasofalcon.message.MessageType;
+import static com.jasofalcon.message.MessageType.USER_JOINED;
 import com.jasofalcon.user.User;
 
 import java.io.Serializable;
@@ -36,4 +37,5 @@ public class Message implements Serializable{
     public String getData(){
         return data;
     }
+    
 }
